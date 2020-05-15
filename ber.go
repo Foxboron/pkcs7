@@ -3,6 +3,7 @@ package pkcs7
 import (
 	"bytes"
 	"errors"
+	"fmt"
 )
 
 var encodeIndent = 0
@@ -247,5 +248,5 @@ func readObject(ber []byte, offset int) (asn1Object, int, error) {
 }
 
 func debugprint(format string, a ...interface{}) {
-	//fmt.Printf(format, a)
+	fmt.Printf(format, a)
 }
