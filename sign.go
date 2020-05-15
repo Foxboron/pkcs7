@@ -124,10 +124,10 @@ func (sd *SignedData) AddSigner(ee *x509.Certificate, pkey crypto.PrivateKey, co
 // The signature algorithm used to hash the data is the one of the end-entity
 // certificate.
 func (sd *SignedData) AddSignerChain(ee *x509.Certificate, pkey crypto.PrivateKey, parents []*x509.Certificate, config SignerInfoConfig) error {
-// Following RFC 2315, 9.2 SignerInfo type, the distinguished name of
-// the issuer of the end-entity signer is stored in the issuerAndSerialNumber
-// section of the SignedData.SignerInfo, alongside the serial number of
-// the end-entity.
+	// Following RFC 2315, 9.2 SignerInfo type, the distinguished name of
+	// the issuer of the end-entity signer is stored in the issuerAndSerialNumber
+	// section of the SignedData.SignerInfo, alongside the serial number of
+	// the end-entity.
 	var ias issuerAndSerial
 	ias.SerialNumber = ee.SerialNumber
 	if len(parents) == 0 {
@@ -151,9 +151,14 @@ func (sd *SignedData) AddSignerChain(ee *x509.Certificate, pkey crypto.PrivateKe
 	h := hash.New()
 	h.Write(sd.data)
 	sd.messageDigest = h.Sum(nil)
-	encryptionOid, err := getOIDForEncryptionAlgorithm(pkey, sd.digestOid)
-	if err != nil {
-		return err
+
+	if sd.encryptionOid == nil {
+		// if the encryption algorithm wasn't set by SetEncryptionAlgorithm,
+		// infer it from the digest algorithm
+		sd.encryptionOid, err = getOIDForEncryptionAlgorithm(pkey, sd.digestOid)
+		if err != nil {
+			return err
+		}
 	}
 	attrs := &attributes{}
 	attrs.Add(OIDAttributeContentType, sd.sd.ContentInfo.ContentType)
@@ -183,7 +188,7 @@ func (sd *SignedData) AddSignerChain(ee *x509.Certificate, pkey crypto.PrivateKe
 		AuthenticatedAttributes:   finalAttrs,
 		UnauthenticatedAttributes: finalUnsignedAttrs,
 		DigestAlgorithm:           pkix.AlgorithmIdentifier{Algorithm: sd.digestOid},
-		DigestEncryptionAlgorithm: pkix.AlgorithmIdentifier{Algorithm: encryptionOid},
+		DigestEncryptionAlgorithm: pkix.AlgorithmIdentifier{Algorithm: sd.encryptionOid},
 		IssuerAndSerialNumber:     ias,
 		EncryptedDigest:           signature,
 		Version:                   1,
