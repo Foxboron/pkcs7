@@ -167,7 +167,14 @@ func Parse(data []byte) (p7 *PKCS7, err error) {
 		return
 	}
 	if err != nil {
-		return
+		// I don't believe you
+		var info asn1.RawValue
+		_, err = asn1.Unmarshal(der, &info)
+		if err != nil {
+			return
+		}
+		// MUHAHAHA
+		return parseSignedData(info.Bytes)
 	}
 
 	// fmt.Printf("--> Content Type: %s", info.ContentType)
