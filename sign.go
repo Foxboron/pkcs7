@@ -210,7 +210,7 @@ func (sd *SignedData) AddSignerChain(ee *x509.Certificate, pkey crypto.PrivateKe
 // applications.
 func (sd *SignedData) SignWithoutAttr(ee *x509.Certificate, pkey crypto.PrivateKey, config SignerInfoConfig) error {
 	var signature []byte
-	sd.sd.DigestAlgorithmIdentifiers = append(sd.sd.DigestAlgorithmIdentifiers, pkix.AlgorithmIdentifier{Algorithm: sd.digestOid})
+	sd.sd.DigestAlgorithmIdentifiers = append(sd.sd.DigestAlgorithmIdentifiers, pkix.AlgorithmIdentifier{Algorithm: sd.digestOid, Parameters: asn1.NullRawValue})
 	hash, err := getHashForOID(sd.digestOid)
 	if err != nil {
 		return err
@@ -288,7 +288,7 @@ func (sd *SignedData) AddCertificate(cert *x509.Certificate) {
 // Detach removes content from the signed data struct to make it a detached signature.
 // This must be called right before Finish()
 func (sd *SignedData) Detach() {
-	sd.sd.ContentInfo = contentInfo{ContentType: OIDData}
+	sd.sd.ContentInfo = contentInfo{ContentType: OIDData, Content: asn1.NullRawValue}
 }
 
 // GetSignedData returns the private Signed Data
